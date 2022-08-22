@@ -120,11 +120,15 @@ public class GyroscopeService extends Service {
                         ));
                         showView = true;
                     } else if (sensorEvent.values[2] < -33.0f && showView) {
-                        wm.removeView(dialogView);
-                        showView = false;
+                        if (showView) {
+                            wm.removeView(dialogView);
+                            showView = false;
+                        }
                     } else if (sensorEvent.values[2] > -8.0f && showView) {
-                        wm.removeView(dialogView);
-                        showView = false;
+                        if (showView) {
+                            wm.removeView(dialogView);
+                            showView = false;
+                        }
                     }
                 }
             }
