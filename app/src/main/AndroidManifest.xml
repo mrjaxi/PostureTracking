@@ -30,13 +30,6 @@
         <activity
             android:name=".PasswordScreen"
             android:exported="false" />
-        <activity
-            android:name=".DialogAddItem"
-            android:configChanges="orientation"
-            android:exported="false" />
-        <activity
-            android:name=".SettingsActivity"
-            android:exported="false" />
 
         <service
             android:name=".GyroscopeService"
