@@ -88,7 +88,6 @@ public class GyroscopeService extends Service {
         listener = new SensorEventListener() {
             @Override
             public void onSensorChanged(SensorEvent sensorEvent) {
-//                Log.d("Message", "Y: " + String.valueOf(sensorEvent.values[1]) + " X: " + String.valueOf(sensorEvent.values[0]) + " Z: " + sensorEvent.values[2]);
                 if (context.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
                     if (sensorEvent.values[1] > -45.0f && sensorEvent.values[1] < -3.5f && !showView) {
                         wm.addView(dialogView, new WindowManager.LayoutParams(
@@ -99,15 +98,19 @@ public class GyroscopeService extends Service {
                                 PixelFormat.TRANSLUCENT
                         ));
                         showView = true;
-                    } else if (sensorEvent.values[1] < -40.0f && showView) {
-                        wm.removeView(dialogView);
-                        showView = false;
-                    } else if (sensorEvent.values[1] > -10.f  && showView) {
-                        wm.removeView(dialogView);
-                        showView = false;
+                    } else if (sensorEvent.values[1] < -45.0f && showView) {
+                        if (showView) {
+                            wm.removeView(dialogView);
+                            showView = false;
+                        }
+                    } else if (sensorEvent.values[1] > -3.5f) {
+                        if (showView) {
+                            wm.removeView(dialogView);
+                            showView = false;
+                        }
                     }
                 } else {
-                    if (sensorEvent.values[2] > -33.0f && sensorEvent.values[2] < -8.f && !showView) {
+                    if (sensorEvent.values[2] > -33.0f && sensorEvent.values[2] < -8.0f && !showView) {
                         wm.addView(dialogView, new WindowManager.LayoutParams(
                                 (int) (wm.getDefaultDisplay().getWidth() / 1.5),
                                 160,
@@ -136,16 +139,13 @@ public class GyroscopeService extends Service {
     }
 
     @Override
-    public void onTaskRemoved(Intent rootIntent) {
-        super.onTaskRemoved(rootIntent);
-//        if (intentStop != null && intentStop.getSerializableExtra("service").equals("stop")){
-//            sensorManager.unregisterListener(listener);
-//            if (showView) {
-//                wm.removeView(dialogView);
-//            }
-//            showView = false;
-//            stopSelf();
-//            stopService(new Intent(context, GyroscopeService.class));
-//        }
+    public void onDestroy() {
+        super.onDestroy();
+        sensorManager.unregisterListener(listener);
+        if (showView) {
+            wm.removeView(dialogView);
+        }
+        showView = false;
+        stopSelf();
     }
 }
