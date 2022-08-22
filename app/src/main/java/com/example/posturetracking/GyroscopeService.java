@@ -1,11 +1,14 @@
 package com.example.posturetracking;
 
-import android.app.AlarmManager;
 import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
+import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -13,8 +16,6 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Binder;
 import android.os.IBinder;
-import android.os.SystemClock;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowManager;
@@ -24,24 +25,48 @@ import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 
 public class GyroscopeService extends Service {
-
     public Context context = this;
 
     private SensorManager sensorManager;
     private Sensor sensor;
     private WindowManager wm;
+    private SensorEventListener listener;
 
     private View dialogView;
     private TextView textView;
 
     private boolean showView = false;
+    private NotificationChannel channel;
+    private NotificationManager service;
+
+    private Intent intentStop;
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this)
-                .setSmallIcon(R.mipmap.ic_launcher)
-                .setContentTitle("PostureTracking in progress")
-                .setContentText("We are tracking your posture!");
+        this.intentStop = intent;
+
+        String SERVICE_NOTIFICATION_ID = "Background Service";
+        String CHANNEL_ID = "Example";
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            channel = new NotificationChannel(CHANNEL_ID, SERVICE_NOTIFICATION_ID, NotificationManager.IMPORTANCE_NONE);
+            channel.setLightColor(Color.BLUE);
+            channel.setLockscreenVisibility(Notification.VISIBILITY_PRIVATE);
+
+            service = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
+            service.createNotificationChannel(channel);
+        }
+
+        Intent notificationIntent = new Intent(this, MainActivity.class);
+        PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_IMMUTABLE);
+        Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
+                .setContentIntent(contentIntent)
+                .setChannelId(CHANNEL_ID)
+                .setOngoing(true)
+                .build();
+
+        startForeground(101, notification);
+
         return START_STICKY;
     }
 
@@ -60,22 +85,44 @@ public class GyroscopeService extends Service {
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         sensor = sensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION);
 
-        sensorManager.registerListener(new SensorEventListener() {
+        listener = new SensorEventListener() {
             @Override
             public void onSensorChanged(SensorEvent sensorEvent) {
-                Log.d("Message", String.valueOf(sensorEvent.values[1]));
-                if (sensorEvent.values[1] > -40.0f && !showView) {
-                    wm.addView(dialogView, new WindowManager.LayoutParams(
-                            (int) (wm.getDefaultDisplay().getWidth() / 1.5),
-                            160,
-                            WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
-                            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
-                            PixelFormat.TRANSLUCENT
-                    ));
-                    showView = true;
-                } else if (sensorEvent.values[1] < -40.0f && showView) {
-                    wm.removeView(dialogView);
-                    showView = false;
+//                Log.d("Message", "Y: " + String.valueOf(sensorEvent.values[1]) + " X: " + String.valueOf(sensorEvent.values[0]) + " Z: " + sensorEvent.values[2]);
+                if (context.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+                    if (sensorEvent.values[1] > -45.0f && sensorEvent.values[1] < -3.5f && !showView) {
+                        wm.addView(dialogView, new WindowManager.LayoutParams(
+                                (int) (wm.getDefaultDisplay().getWidth() / 1.5),
+                                160,
+                                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+                                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+                                PixelFormat.TRANSLUCENT
+                        ));
+                        showView = true;
+                    } else if (sensorEvent.values[1] < -40.0f && showView) {
+                        wm.removeView(dialogView);
+                        showView = false;
+                    } else if (sensorEvent.values[1] > -10.f  && showView) {
+                        wm.removeView(dialogView);
+                        showView = false;
+                    }
+                } else {
+                    if (sensorEvent.values[2] > -33.0f && sensorEvent.values[2] < -8.f && !showView) {
+                        wm.addView(dialogView, new WindowManager.LayoutParams(
+                                (int) (wm.getDefaultDisplay().getWidth() / 1.5),
+                                160,
+                                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+                                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+                                PixelFormat.TRANSLUCENT
+                        ));
+                        showView = true;
+                    } else if (sensorEvent.values[2] < -33.0f && showView) {
+                        wm.removeView(dialogView);
+                        showView = false;
+                    } else if (sensorEvent.values[2] > -8.0f && showView) {
+                        wm.removeView(dialogView);
+                        showView = false;
+                    }
                 }
             }
 
@@ -83,16 +130,22 @@ public class GyroscopeService extends Service {
             public void onAccuracyChanged(Sensor sensor, int i) {
 
             }
-        }, sensor, SensorManager.SENSOR_DELAY_NORMAL);
+        };
+
+        sensorManager.registerListener(listener, sensor, SensorManager.SENSOR_DELAY_NORMAL);
     }
 
     @Override
     public void onTaskRemoved(Intent rootIntent) {
-        Intent restartServiceTask = new Intent(getApplicationContext(),this.getClass());
-        restartServiceTask.setPackage(getPackageName());
-        PendingIntent restartPendingIntent = PendingIntent.getService(getApplicationContext(), 1, restartServiceTask, PendingIntent.FLAG_ONE_SHOT);
-        AlarmManager myAlarmService = (AlarmManager) getApplicationContext().getSystemService(Context.ALARM_SERVICE);
-        myAlarmService.set(AlarmManager.ELAPSED_REALTIME, SystemClock.elapsedRealtime() + 1000, restartPendingIntent);
         super.onTaskRemoved(rootIntent);
+//        if (intentStop != null && intentStop.getSerializableExtra("service").equals("stop")){
+//            sensorManager.unregisterListener(listener);
+//            if (showView) {
+//                wm.removeView(dialogView);
+//            }
+//            showView = false;
+//            stopSelf();
+//            stopService(new Intent(context, GyroscopeService.class));
+//        }
     }
 }
