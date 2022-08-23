@@ -6,6 +6,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.view.WindowManager;
+
+import java.util.Objects;
 
 public class SplashScreen extends AppCompatActivity {
 
@@ -16,6 +19,7 @@ public class SplashScreen extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash_screen);
+        Objects.requireNonNull(getSupportActionBar()).hide();
 
         sharedPreferences = getSharedPreferences("SettingsStore", Context.MODE_PRIVATE);
         if (sharedPreferences.contains("pswd")){

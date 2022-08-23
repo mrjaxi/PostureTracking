@@ -1,3 +1,5 @@
 <resources>
-    <string name="app_name">PostureTracking</string>
+    <string name="app_name">Осанка</string>
+    <string name="settings">Настройки</string>
+    <string name="about">О Программе</string>
 </resources>

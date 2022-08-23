@@ -1,4 +1,4 @@
-package com.example.posturetracking;
+package com.example.posturetracking.Service;
 
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -23,6 +23,9 @@ import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
+
+import com.example.posturetracking.MainActivity;
+import com.example.posturetracking.R;
 
 public class GyroscopeService extends Service {
     public Context context = this;
@@ -57,10 +60,7 @@ public class GyroscopeService extends Service {
             service.createNotificationChannel(channel);
         }
 
-        Intent notificationIntent = new Intent(this, MainActivity.class);
-        PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_IMMUTABLE);
         Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setContentIntent(contentIntent)
                 .setChannelId(CHANNEL_ID)
                 .setOngoing(true)
                 .build();

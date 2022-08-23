@@ -2,12 +2,14 @@ package com.example.posturetracking;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -25,6 +27,7 @@ public class PasswordScreen extends AppCompatActivity{
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_password_screen);
+        Objects.requireNonNull(getSupportActionBar()).hide();
 
         sharedPreferences = getSharedPreferences("SettingsStore", Context.MODE_PRIVATE);
 
@@ -86,10 +89,9 @@ public class PasswordScreen extends AppCompatActivity{
     public void savePassword(View view) {
         if (getIntent().getSerializableExtra("password").equals("check")){
             String pswd = sharedPreferences.getString("pswd", "");
-            Log.d("T: ", String.valueOf(Objects.equals(pswd, (String) passwordTextView.getText())));
             if (Objects.equals(pswd, (String) passwordTextView.getText())) {
-                startActivity(new Intent(this, MainActivity.class));
                 finish();
+                startActivity(new Intent(this, MainActivity.class));
             } else {
                 errorMessageText.setText("Неверный пароль");
             }
@@ -98,8 +100,33 @@ public class PasswordScreen extends AppCompatActivity{
             editor.putString("pswd", (String) passwordTextView.getText());
             editor.apply();
 
-            startActivity(new Intent(this, MainActivity.class));
             finish();
+        } else if (getIntent().getSerializableExtra("password").equals("remove")) {
+            editor = sharedPreferences.edit();
+            String pswd = sharedPreferences.getString("pswd", "");
+            if (Objects.equals(pswd, (String) passwordTextView.getText())) {
+                editor.putString("pswd", "");
+                editor.apply();
+
+                finish();
+            } else {
+                errorMessageText.setText("Неверный пароль");
+            }
+        } else if (getIntent().getSerializableExtra("password").equals("check-activity")) {
+            String pswd = sharedPreferences.getString("pswd", "");
+            if (Objects.equals(pswd, (String) passwordTextView.getText())) {
+                Intent returnResultIntent = new Intent();
+                returnResultIntent.putExtra("result", true);
+                setResult(Activity.RESULT_OK, returnResultIntent);
+                finish();
+            } else {
+                errorMessageText.setText("Неверный пароль");
+            }
         }
+    }
+
+    @Override
+    public void onBackPressed() {
+        finish();
     }
 }

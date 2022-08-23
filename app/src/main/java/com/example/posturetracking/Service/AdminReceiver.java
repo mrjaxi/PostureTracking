@@ -1,4 +1,6 @@
 package com.example.posturetracking.Service;
 
-public class AdminReceiver {
+import android.app.admin.DeviceAdminReceiver;
+
+public class AdminReceiver extends DeviceAdminReceiver {
 }
