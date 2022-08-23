@@ -6,7 +6,7 @@
     <uses-feature android:name="android.hardware.sensor.gyroscope" />
     <uses-feature
         android:name="android.software.device_admin"
-        android:required="true"/>
+        android:required="true" />
 
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.TYPE_APPLICATION_OVERLAY" />
@@ -50,16 +50,17 @@
         <activity
             android:name=".MainActivity"
             android:exported="true" />
+
         <receiver
             android:name=".Service.AdminReceiver"
-            android:permission="android.permission.BIND_DEVICE_ADMIN"
-            android:exported="true">
+            android:exported="true"
+            android:permission="android.permission.BIND_DEVICE_ADMIN">
             <meta-data
                 android:name="android.app.device_admin"
-                android:resource="@xml/admin"/>
+                android:resource="@xml/admin" />
 
             <intent-filter>
-                <action android:name="android.app.action.DEVICE_ADMIN_ENABLED"/>
+                <action android:name="android.app.action.DEVICE_ADMIN_ENABLED" />
             </intent-filter>
         </receiver>
     </application>

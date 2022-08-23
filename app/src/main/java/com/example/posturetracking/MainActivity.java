@@ -5,11 +5,9 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.Intent;
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
-import android.hardware.SensorManager;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -17,15 +15,20 @@ import android.provider.Settings;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.posturetracking.Service.GyroscopeService;
 
 public class MainActivity extends AppCompatActivity {
+
+    private SharedPreferences sharedPreferences;
+    private static boolean serviceIsStarted = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        sharedPreferences = getSharedPreferences("SettingsStore", Context.MODE_PRIVATE);
 
         if (!Settings.canDrawOverlays(this)) {
             Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + getPackageName()));
@@ -40,13 +43,28 @@ public class MainActivity extends AppCompatActivity {
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     public void startBackService(View view) {
-        startForegroundService(new Intent(this, GyroscopeService.class));
+        String firstStringPos = sharedPreferences.getString("PortraitFirstInterval", "");
+        String secondStringPos = sharedPreferences.getString("PortraitSecondInterval", "");
+
+        if (firstStringPos.length() > 0 && secondStringPos.length() > 0) {
+            if (!serviceIsStarted) {
+                startForegroundService(new Intent(this, GyroscopeService.class));
+                serviceIsStarted = true;
+            } else {
+                Toast.makeText(this, "Сервис уже запущен!", Toast.LENGTH_LONG).show();
+            }
+        } else {
+            Toast.makeText(this, "Вы еще не задали значения. Перейдите: Найстройки ➝ Вертикальный триггер", Toast.LENGTH_LONG).show();
+        }
     }
 
     public void stopService(View view) {
-        Intent intent = new Intent(this, GyroscopeService.class);
-        intent.putExtra("service", "stop");
-        stopService(intent);
+        if (serviceIsStarted) {
+            stopService(new Intent(this, GyroscopeService.class));
+            serviceIsStarted = false;
+        } else {
+            Toast.makeText(this, "Сервис уже выключен!", Toast.LENGTH_LONG).show();
+        }
     }
 
     @Override

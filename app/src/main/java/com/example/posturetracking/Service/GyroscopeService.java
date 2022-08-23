@@ -3,10 +3,10 @@ package com.example.posturetracking.Service;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.PixelFormat;
@@ -16,10 +16,12 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Binder;
 import android.os.IBinder;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
@@ -38,11 +40,15 @@ public class GyroscopeService extends Service {
     private View dialogView;
     private TextView textView;
 
+    private float y, y1;
     private boolean showView = false;
+
     private NotificationChannel channel;
     private NotificationManager service;
+    private SharedPreferences sharedPreferences;
 
     private Intent intentStop;
+    private Notification notification;
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -60,7 +66,7 @@ public class GyroscopeService extends Service {
             service.createNotificationChannel(channel);
         }
 
-        Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
+        notification = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setChannelId(CHANNEL_ID)
                 .setOngoing(true)
                 .build();
@@ -78,6 +84,12 @@ public class GyroscopeService extends Service {
 
     @Override
     public void onCreate() {
+        Toast.makeText(this, "Сервис запущен", Toast.LENGTH_LONG).show();
+        sharedPreferences = getSharedPreferences("SettingsStore", Context.MODE_PRIVATE);
+
+        y = Float.parseFloat(sharedPreferences.getString("PortraitFirstInterval", "").replace(",", "."));
+        y1 = Float.parseFloat(sharedPreferences.getString("PortraitSecondInterval", "").replace(",", "."));
+
         dialogView = LayoutInflater.from(context).inflate(R.layout.activity_overlay_dialog, null);
         wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
         textView = dialogView.findViewById(R.id.textView);
@@ -89,21 +101,21 @@ public class GyroscopeService extends Service {
             @Override
             public void onSensorChanged(SensorEvent sensorEvent) {
                 if (context.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
-                    if (sensorEvent.values[1] > -45.0f && sensorEvent.values[1] < -3.5f && !showView) {
+                    if (sensorEvent.values[1] > Math.min(y, y1) && sensorEvent.values[1] < Math.max(y, y1) && !showView) {
                         wm.addView(dialogView, new WindowManager.LayoutParams(
-                            (int) (wm.getDefaultDisplay().getWidth() / 1.5),
-                            160,
-                            WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
-                            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
-                            PixelFormat.TRANSLUCENT
+                                (int) (wm.getDefaultDisplay().getWidth() / 1.5),
+                                160,
+                                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+                                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+                                PixelFormat.TRANSLUCENT
                         ));
                         showView = true;
-                    } else if (sensorEvent.values[1] < -45.0f && showView) {
+                    } else if (sensorEvent.values[1] < Math.min(y, y1) && showView) {
                         if (showView) {
                             wm.removeView(dialogView);
                             showView = false;
                         }
-                    } else if (sensorEvent.values[1] > -3.5f) {
+                    } else if (sensorEvent.values[1] > Math.max(y, y1)) {
                         if (showView) {
                             wm.removeView(dialogView);
                             showView = false;
@@ -138,7 +150,6 @@ public class GyroscopeService extends Service {
 
             }
         };
-
         sensorManager.registerListener(listener, sensor, SensorManager.SENSOR_DELAY_NORMAL);
     }
 
@@ -151,5 +162,6 @@ public class GyroscopeService extends Service {
         }
         showView = false;
         stopSelf();
+        Toast.makeText(this, "Сервис завершил работу", Toast.LENGTH_LONG).show();
     }
 }
