@@ -91,11 +91,11 @@ public class GyroscopeService extends Service {
                 if (context.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
                     if (sensorEvent.values[1] > -45.0f && sensorEvent.values[1] < -3.5f && !showView) {
                         wm.addView(dialogView, new WindowManager.LayoutParams(
-                                (int) (wm.getDefaultDisplay().getWidth() / 1.5),
-                                160,
-                                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
-                                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
-                                PixelFormat.TRANSLUCENT
+                            (int) (wm.getDefaultDisplay().getWidth() / 1.5),
+                            160,
+                            WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+                            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+                            PixelFormat.TRANSLUCENT
                         ));
                         showView = true;
                     } else if (sensorEvent.values[1] < -45.0f && showView) {
