@@ -36,17 +36,15 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-    }
-
     @RequiresApi(api = Build.VERSION_CODES.O)
     public void startBackService(View view) {
         String firstStringPos = sharedPreferences.getString("PortraitFirstInterval", "");
         String secondStringPos = sharedPreferences.getString("PortraitSecondInterval", "");
 
-        if (firstStringPos.length() > 0 && secondStringPos.length() > 0) {
+        String firstLndStringPos = sharedPreferences.getString("LandscapeFirstInterval", "");
+        String secondLndStringPos = sharedPreferences.getString("LandscapeSecondInterval", "");
+
+        if ((firstStringPos.length() > 0 && secondStringPos.length() > 0) || (firstLndStringPos.length() > 0 && secondLndStringPos.length() > 0)) {
             if (!serviceIsStarted) {
                 startForegroundService(new Intent(this, GyroscopeService.class));
                 serviceIsStarted = true;
@@ -54,7 +52,7 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(this, "Сервис уже запущен!", Toast.LENGTH_LONG).show();
             }
         } else {
-            Toast.makeText(this, "Вы еще не задали значения. Перейдите: Найстройки ➝ Вертикальный триггер", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Вы еще не задали значения. Перейдите: Найстройки ➝ Триггеры", Toast.LENGTH_LONG).show();
         }
     }
 

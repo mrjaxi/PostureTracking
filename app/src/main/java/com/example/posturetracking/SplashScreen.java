@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.WindowManager;
 
 import java.util.Objects;
@@ -24,7 +25,7 @@ public class SplashScreen extends AppCompatActivity {
         sharedPreferences = getSharedPreferences("SettingsStore", Context.MODE_PRIVATE);
         if (sharedPreferences.contains("pswd")){
             pswd = sharedPreferences.getString("pswd", "");
-
+            Log.d("TAG", "onCreate: " + pswd);
             if (pswd.length() > 0) {
                 Intent intent = new Intent(this, PasswordScreen.class);
                 intent.putExtra("password", "check");
@@ -32,10 +33,9 @@ public class SplashScreen extends AppCompatActivity {
             } else {
                 startActivity(new Intent(this, MainActivity.class));
             }
-            finish();
         } else {
             startActivity(new Intent(this, MainActivity.class));
-            finish();
         }
+        finish();
     }
 }

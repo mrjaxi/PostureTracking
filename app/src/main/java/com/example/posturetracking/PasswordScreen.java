@@ -6,6 +6,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -26,7 +27,11 @@ public class PasswordScreen extends AppCompatActivity{
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_password_screen);
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+            setContentView(R.layout.activity_password_screen);
+        } else {
+            setContentView(R.layout.activity_password_screen_landscape);
+        }
         Objects.requireNonNull(getSupportActionBar()).hide();
 
         sharedPreferences = getSharedPreferences("SettingsStore", Context.MODE_PRIVATE);

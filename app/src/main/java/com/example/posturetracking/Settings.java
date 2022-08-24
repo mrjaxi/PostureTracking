@@ -17,7 +17,7 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
-import android.view.View;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.TextView;
@@ -33,7 +33,7 @@ public class Settings extends AppCompatActivity {
     private Context context = this;
 
     private CheckBox setPasswordCheckBox, setNotDeletedApp, verticalTrigger, horizontalTrigger;
-    private TextView startTriggerPos, endTriggerPos;
+    private TextView startTriggerPos, endTriggerPos, titleBottomDialog;
     private Button buttonSetInterval;
     private BottomSheetDialog bottomSheetDialog;
 
@@ -69,7 +69,8 @@ public class Settings extends AppCompatActivity {
         boolean vertTrigger = sharedPreferences.getString("PortraitFirstInterval", "").length() > 0
                 && sharedPreferences.getString("PortraitSecondInterval", "").length() > 0;
 
-        boolean horizTrigger = sharedPreferences.getString("horizontalTrigger", "").length() > 0;
+        boolean horizTrigger = sharedPreferences.getString("LandscapeFirstInterval", "").length() > 0
+                && sharedPreferences.getString("LandscapeSecondInterval", "").length() > 0;
 
         devicePolicyManager = (DevicePolicyManager)getSystemService(DEVICE_POLICY_SERVICE);
         adminReceiver = new ComponentName(this, AdminReceiver.class);
@@ -142,14 +143,29 @@ public class Settings extends AppCompatActivity {
                 }
 
                 activityResultLauncher.launch(intentResult);
+            } else {
+                gyroscopeIntervalOptions(isChecked, "portrait");
             }
-
-
         });
 
         // Установка значения для горизонтального режима, когда будет действовать сервис
         horizontalTrigger.setOnCheckedChangeListener((compoundButton, isChecked) -> {
+            stopService(new Intent(this, GyroscopeService.class));
 
+            if (sharedPreferences.getString("pswd", "").length() > 0) {
+                Intent intentResult = new Intent(context, PasswordScreen.class);
+                intentResult.putExtra("password", "check-activity");
+
+                if (isChecked) {
+                    checkType = "setHorizontal";
+                } else {
+                    checkType = "removeHorizontal";
+                }
+
+                activityResultLauncher.launch(intentResult);
+            } else {
+                gyroscopeIntervalOptions(isChecked, "landscape");
+            }
         });
     }
 
@@ -178,19 +194,30 @@ public class Settings extends AppCompatActivity {
                             break;
                         case "setVertical":
                             if (result.getResultCode() == Activity.RESULT_OK) {
-                                verticalIntervalOptions(true);
+                                gyroscopeIntervalOptions(true, "portrait");
                             }
                             break;
                         case "removeVertical":
                             if (result.getResultCode() == Activity.RESULT_OK) {
-                                verticalIntervalOptions(false);
+                                gyroscopeIntervalOptions(false, "portrait");
                             }
+                            break;
+                        case "setHorizontal":
+                            if (result.getResultCode() == Activity.RESULT_OK) {
+                                gyroscopeIntervalOptions(true, "landscape");
+                            }
+                            break;
+                        case "removeHorizontal":
+                            if (result.getResultCode() == Activity.RESULT_OK) {
+                                gyroscopeIntervalOptions(false, "landscape");
+                            }
+                            break;
                     }
                 }
             });
 
 
-    private void verticalIntervalOptions (boolean isChecked){
+    private void gyroscopeIntervalOptions (boolean isChecked, String gyroscopePosition){
         if (isChecked){
             bottomSheetDialog.show();
 
@@ -198,13 +225,30 @@ public class Settings extends AppCompatActivity {
             endTriggerPos = bottomSheetDialog.findViewById(R.id.endXRegim);
             buttonSetInterval = bottomSheetDialog.findViewById(R.id.settings_add_interval);
 
+            titleBottomDialog = bottomSheetDialog.findViewById(R.id.title_bottom_sheet_dialog);
+
+            if (gyroscopePosition.equals("portrait")){
+                Objects.requireNonNull(titleBottomDialog).setText("Портретный режим");
+            } else {
+                Objects.requireNonNull(titleBottomDialog).setText("Горизонтальный режим");
+            }
+
             SensorEventListener listener = new SensorEventListener() {
                 @Override
                 public void onSensorChanged(SensorEvent sensorEvent) {
                     if (saveInterval) {
-                        endTriggerPos.setText(String.format("%.1f", sensorEvent.values[1]));
+                        if (gyroscopePosition.equals("portrait")) {
+                            endTriggerPos.setText(String.format("%.1f", sensorEvent.values[1]));
+                        } else {
+                            endTriggerPos.setText(String.format("%.1f", sensorEvent.values[2]));
+                        }
                     } else {
-                        startTriggerPos.setText(String.format("%.1f", sensorEvent.values[1]));
+                        if (gyroscopePosition.equals("portrait")) {
+                            startTriggerPos.setText(String.format("%.1f", sensorEvent.values[1]));
+                        } else {
+                            startTriggerPos.setText(String.format("%.1f", sensorEvent.values[2]));
+
+                        }
                     }
                 }
 
@@ -218,21 +262,26 @@ public class Settings extends AppCompatActivity {
 
             buttonSetInterval.setOnClickListener(view -> {
                 if (saveInterval) {
-                    editor.putString("PortraitFirstInterval", (String) endTriggerPos.getText());
+                    editor.putString(gyroscopePosition.equals("portrait") ? "PortraitFirstInterval" : "LandscapeFirstInterval", (String) endTriggerPos.getText());
                     sensorManager.unregisterListener(listener);
                     endTriggerPos.setText("0.0");
                     bottomSheetDialog.cancel();
                     saveInterval = false;
                 } else {
-                    editor.putString("PortraitSecondInterval", (String) startTriggerPos.getText());
+                    editor.putString(gyroscopePosition.equals("portrait") ? "PortraitSecondInterval" : "LandscapeSecondInterval", (String) startTriggerPos.getText());
                     buttonSetInterval.setText("Сохранить");
                     saveInterval = true;
                 }
                 editor.apply();
             });
         } else {
-            editor.putString("PortraitFirstInterval", "");
-            editor.putString("PortraitSecondInterval", "");
+            if (gyroscopePosition.equals("portrait")) {
+                editor.putString("PortraitFirstInterval", "");
+                editor.putString("PortraitSecondInterval", "");
+            } else {
+                editor.putString("LandscapeFirstInterval", "");
+                editor.putString("LandscapeSecondInterval", "");
+            }
             editor.apply();
         }
     }

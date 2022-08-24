@@ -41,6 +41,7 @@ public class GyroscopeService extends Service {
     private TextView textView;
 
     private float y, y1;
+    private float z, z1;
     private boolean showView = false;
 
     private NotificationChannel channel;
@@ -87,8 +88,21 @@ public class GyroscopeService extends Service {
         Toast.makeText(this, "Сервис запущен", Toast.LENGTH_LONG).show();
         sharedPreferences = getSharedPreferences("SettingsStore", Context.MODE_PRIVATE);
 
-        y = Float.parseFloat(sharedPreferences.getString("PortraitFirstInterval", "").replace(",", "."));
-        y1 = Float.parseFloat(sharedPreferences.getString("PortraitSecondInterval", "").replace(",", "."));
+        String firstStringPos = sharedPreferences.getString("PortraitFirstInterval", "");
+        String secondStringPos = sharedPreferences.getString("PortraitSecondInterval", "");
+
+        if (firstStringPos.length() > 0 && secondStringPos.length() > 0) {
+            y = Float.parseFloat(sharedPreferences.getString("PortraitFirstInterval", "").replace(",", "."));
+            y1 = Float.parseFloat(sharedPreferences.getString("PortraitSecondInterval", "").replace(",", "."));
+        }
+
+        String firstLndStringPos = sharedPreferences.getString("LandscapeFirstInterval", "");
+        String secondLndStringPos = sharedPreferences.getString("LandscapeSecondInterval", "");
+
+        if (firstLndStringPos.length() > 0 && secondLndStringPos.length() > 0) {
+            z = Float.parseFloat(sharedPreferences.getString("LandscapeFirstInterval", "").replace(",", "."));
+            z1 = Float.parseFloat(sharedPreferences.getString("LandscapeSecondInterval", "").replace(",", "."));
+        }
 
         dialogView = LayoutInflater.from(context).inflate(R.layout.activity_overlay_dialog, null);
         wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
@@ -100,7 +114,7 @@ public class GyroscopeService extends Service {
         listener = new SensorEventListener() {
             @Override
             public void onSensorChanged(SensorEvent sensorEvent) {
-                if (context.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+                if (context.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT && (firstStringPos.length() > 0 && secondStringPos.length() > 0)) {
                     if (sensorEvent.values[1] > Math.min(y, y1) && sensorEvent.values[1] < Math.max(y, y1) && !showView) {
                         wm.addView(dialogView, new WindowManager.LayoutParams(
                                 (int) (wm.getDefaultDisplay().getWidth() / 1.5),
@@ -121,8 +135,8 @@ public class GyroscopeService extends Service {
                             showView = false;
                         }
                     }
-                } else {
-                    if (sensorEvent.values[2] > -33.0f && sensorEvent.values[2] < -8.0f && !showView) {
+                } else if (context.getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE && (firstLndStringPos.length() > 0 && secondLndStringPos.length() > 0)) {
+                    if (sensorEvent.values[2] > Math.min(z, z1) && sensorEvent.values[2] < Math.max(z, z1) && !showView) {
                         wm.addView(dialogView, new WindowManager.LayoutParams(
                                 (int) (wm.getDefaultDisplay().getWidth() / 1.5),
                                 160,
@@ -131,12 +145,12 @@ public class GyroscopeService extends Service {
                                 PixelFormat.TRANSLUCENT
                         ));
                         showView = true;
-                    } else if (sensorEvent.values[2] < -33.0f && showView) {
+                    } else if (sensorEvent.values[2] < Math.min(z, z1) && showView) {
                         if (showView) {
                             wm.removeView(dialogView);
                             showView = false;
                         }
-                    } else if (sensorEvent.values[2] > -8.0f && showView) {
+                    } else if (sensorEvent.values[2] > Math.max(z, z1) && showView) {
                         if (showView) {
                             wm.removeView(dialogView);
                             showView = false;
