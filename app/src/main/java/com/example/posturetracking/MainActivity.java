@@ -85,6 +85,8 @@ public class MainActivity extends AppCompatActivity {
             case R.id.settings:
                 startActivity(new Intent(this, com.example.posturetracking.Settings.class));
                 return true;
+            case R.id.about:
+                startActivity(new Intent(this, com.example.posturetracking.AboutActivity.class));
             default:
                 return super.onOptionsItemSelected(item);
         }
