@@ -15,6 +15,7 @@ import android.provider.Settings;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Toast;
 
 import com.example.posturetracking.Service.GyroscopeService;
@@ -48,7 +49,11 @@ public class MainActivity extends AppCompatActivity {
 
         if ((firstStringPos.length() > 0 && secondStringPos.length() > 0) || (firstLndStringPos.length() > 0 && secondLndStringPos.length() > 0)) {
             if (!serviceIsStarted) {
-                startService(new Intent(this, GyroscopeService.class));
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    startForegroundService(new Intent(this, GyroscopeService.class));
+                } else {
+                    startService(new Intent(this, GyroscopeService.class));
+                }
                 serviceIsStarted = true;
             } else {
                 Toast.makeText(this, "Сервис уже запущен!", Toast.LENGTH_LONG).show();

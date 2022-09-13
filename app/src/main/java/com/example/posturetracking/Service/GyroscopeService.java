@@ -45,6 +45,7 @@ public class GyroscopeService extends Service {
     private float y, y1;
     private float z, z1;
     private boolean showView = false;
+    private int LAYOUT_FLAG;
 
     private NotificationChannel channel;
     private NotificationManager service;
@@ -113,6 +114,12 @@ public class GyroscopeService extends Service {
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         sensor = sensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION);
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            LAYOUT_FLAG = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
+        } else {
+            LAYOUT_FLAG = WindowManager.LayoutParams.TYPE_PHONE;
+        }
+
         listener = new SensorEventListener() {
             @Override
             public void onSensorChanged(SensorEvent sensorEvent) {
@@ -121,7 +128,7 @@ public class GyroscopeService extends Service {
                         wm.addView(dialogView, new WindowManager.LayoutParams(
                             (int) (wm.getDefaultDisplay().getWidth() / 1.5),
                             160,
-                            WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+                                LAYOUT_FLAG,
                             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
                             PixelFormat.TRANSLUCENT
                         ));
@@ -142,7 +149,7 @@ public class GyroscopeService extends Service {
                         wm.addView(dialogView, new WindowManager.LayoutParams(
                             (int) (wm.getDefaultDisplay().getWidth() / 1.5),
                             160,
-                            WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+                                LAYOUT_FLAG,
                             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
                             PixelFormat.TRANSLUCENT
                         ));
