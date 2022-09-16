@@ -20,6 +20,8 @@ import android.widget.Toast;
 
 import com.example.posturetracking.Service.GyroscopeService;
 
+import java.util.Objects;
+
 public class MainActivity extends AppCompatActivity {
 
     private SharedPreferences sharedPreferences;
@@ -29,6 +31,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        Objects.requireNonNull(getSupportActionBar()).setTitle("Главная");
+
         sharedPreferences = getSharedPreferences("SettingsStore", Context.MODE_PRIVATE);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {

@@ -1,7 +1,7 @@
 <resources>
-    <string name="app_name">Осанка</string>
+    <string name="app_name">collum365</string>
     <string name="settings">Настройки</string>
     <string name="about">О Программе</string>
     <string name="about_text">Приложение поможет вашему ребёнку и вам контролировать положение шеи при использовании смартфона. При изменении положения смартфона на экране появляется напоминание не позволяющее дальнейшее использовании мобильного устройства.</string>
-    <string name="about_title">О приложении Осанка</string>
+    <string name="about_title">О приложении collum365</string>
 </resources>

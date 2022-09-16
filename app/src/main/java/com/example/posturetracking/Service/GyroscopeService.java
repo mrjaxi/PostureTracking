@@ -71,6 +71,8 @@ public class GyroscopeService extends Service {
         }
 
         notification = new NotificationCompat.Builder(this, CHANNEL_ID)
+                .setSmallIcon(R.drawable.notify_icons)
+                .setShowWhen(false)
                 .setChannelId(CHANNEL_ID)
                 .setOngoing(true)
                 .build();
