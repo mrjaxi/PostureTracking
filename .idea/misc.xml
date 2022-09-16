@@ -12,6 +12,7 @@
         <entry key="app/src/main/res/layout-v28/activity_settings.xml" value="0.31927083333333334" />
         <entry key="app/src/main/res/layout/activity_about.xml" value="0.21875" />
         <entry key="app/src/main/res/layout/activity_bottom_modal.xml" value="0.33" />
+        <entry key="app/src/main/res/layout/activity_bottom_modal_two.xml" value="0.31927083333333334" />
         <entry key="app/src/main/res/layout/activity_dialog_add_item.xml" value="0.1" />
         <entry key="app/src/main/res/layout/activity_main.xml" value="0.33" />
         <entry key="app/src/main/res/layout/activity_overlay_dialog.xml" value="0.22" />
@@ -20,6 +21,9 @@
         <entry key="app/src/main/res/layout/activity_settings.xml" value="0.3203125" />
         <entry key="app/src/main/res/layout/activity_splash_screen.xml" value="0.2" />
         <entry key="app/src/main/res/layout/bottom_modal.xml" value="0.31927083333333334" />
+        <entry key="app/src/main/res/layout/fragment_first_modal_settings.xml" value="0.24375" />
+        <entry key="app/src/main/res/layout/modal_first.xml" value="0.14947916666666666" />
+        <entry key="app/src/main/res/layout/modal_success.xml" value="0.33" />
         <entry key="app/src/main/res/menu/menu.xml" value="0.31927083333333334" />
         <entry key="app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml" value="0.323" />
         <entry key="app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml" value="0.105" />

@@ -18,6 +18,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.TextView;
@@ -33,9 +34,10 @@ public class Settings extends AppCompatActivity {
     private Context context = this;
 
     private CheckBox setPasswordCheckBox, setNotDeletedApp, verticalTrigger, horizontalTrigger;
-    private TextView startTriggerPos, endTriggerPos, titleBottomDialog;
-    private Button buttonSetInterval;
+    private TextView startTriggerPos, titleBottomDialog;
+    private Button buttonSetInterval, closeModal;
     private BottomSheetDialog bottomSheetDialog;
+    private TextView subTextBottomModal;
 
     private SharedPreferences sharedPreferences;
     private SharedPreferences.Editor editor;
@@ -45,7 +47,7 @@ public class Settings extends AppCompatActivity {
     private Sensor sensor;
 
     private String checkType = "";
-    private boolean saveInterval = false;
+    private String saveInterval = "start";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -222,10 +224,9 @@ public class Settings extends AppCompatActivity {
             bottomSheetDialog.show();
 
             startTriggerPos = bottomSheetDialog.findViewById(R.id.startXRegim);
-            endTriggerPos = bottomSheetDialog.findViewById(R.id.endXRegim);
             buttonSetInterval = bottomSheetDialog.findViewById(R.id.settings_add_interval);
-
             titleBottomDialog = bottomSheetDialog.findViewById(R.id.title_bottom_sheet_dialog);
+            subTextBottomModal = bottomSheetDialog.findViewById(R.id.subtext_bottom_modal);
 
             if (gyroscopePosition.equals("portrait")){
                 Objects.requireNonNull(titleBottomDialog).setText("Портретный режим");
@@ -236,19 +237,10 @@ public class Settings extends AppCompatActivity {
             SensorEventListener listener = new SensorEventListener() {
                 @Override
                 public void onSensorChanged(SensorEvent sensorEvent) {
-                    if (saveInterval) {
-                        if (gyroscopePosition.equals("portrait")) {
-                            endTriggerPos.setText(String.format("%.1f", sensorEvent.values[1]));
-                        } else {
-                            endTriggerPos.setText(String.format("%.1f", sensorEvent.values[2]));
-                        }
+                    if (gyroscopePosition.equals("portrait")) {
+                        startTriggerPos.setText(String.format("%.1f", sensorEvent.values[1]));
                     } else {
-                        if (gyroscopePosition.equals("portrait")) {
-                            startTriggerPos.setText(String.format("%.1f", sensorEvent.values[1]));
-                        } else {
-                            startTriggerPos.setText(String.format("%.1f", sensorEvent.values[2]));
-
-                        }
+                        startTriggerPos.setText(String.format("%.1f", sensorEvent.values[2]));
                     }
                 }
 
@@ -261,17 +253,29 @@ public class Settings extends AppCompatActivity {
             sensorManager.registerListener(listener, sensor, SensorManager.SENSOR_DELAY_NORMAL);
 
             buttonSetInterval.setOnClickListener(view -> {
-                if (saveInterval) {
-                    editor.putString(gyroscopePosition.equals("portrait") ? "PortraitFirstInterval" : "LandscapeFirstInterval", (String) endTriggerPos.getText());
+                if (saveInterval.equals("end")) {
+                    editor.putString(gyroscopePosition.equals("portrait") ? "PortraitFirstInterval" : "LandscapeFirstInterval", (String) startTriggerPos.getText());
                     sensorManager.unregisterListener(listener);
-                    endTriggerPos.setText("0.0");
-                    bottomSheetDialog.cancel();
-                    saveInterval = false;
-                } else {
+
+                    titleBottomDialog.setText(R.string.header_modal);
+                    subTextBottomModal.setText(R.string.success_modal);
+                    startTriggerPos.setVisibility(View.GONE);
+                    buttonSetInterval.setText("Закрыть");
+
+                    saveInterval = "close";
+                } else if (saveInterval.equals("start")){
                     editor.putString(gyroscopePosition.equals("portrait") ? "PortraitSecondInterval" : "LandscapeSecondInterval", (String) startTriggerPos.getText());
                     buttonSetInterval.setText("Сохранить");
-                    saveInterval = true;
+                    subTextBottomModal.setText(R.string.end_modal);
+                    saveInterval = "end";
+                } else {
+                    bottomSheetDialog.cancel();
+                    startTriggerPos.setVisibility(View.VISIBLE);
+                    subTextBottomModal.setText(R.string.start_modal);
+                    buttonSetInterval.setText("Добавить значение");
+                    saveInterval = "start";
                 }
+
                 editor.apply();
             });
         } else {
